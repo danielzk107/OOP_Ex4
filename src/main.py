@@ -1,16 +1,27 @@
-# This is a sample Python script.
+"""
+@author AchiyaZigi
+OOP - Ex4
+Very simple GUI example for python client to communicates with the server and "play the game!"
+"""
+from types import SimpleNamespace
+from client import Client
+import json
+import Graph
+from AlgorithmsClass import Algorithms
+from pygame import gfxdraw
+import pygame
+from pygame import *
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+HOST = "127.0.0.1"
+PORT = 6666
+# Create a connection:
+client = Client()
+client.start_connection(HOST, PORT)
+pokemons = client.get_pokemons()
+pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
+print(pokemons)
+# Create an algorithms object and get a graph:
+g_algo = Algorithms()
+g_algo.load_from_json(client.get_graph())
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
