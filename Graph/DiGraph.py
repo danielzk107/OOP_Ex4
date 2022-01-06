@@ -1,5 +1,5 @@
-import Node
-import Edge
+from Graph import Node
+from Graph import Edge
 
 
 class DiGraph:
@@ -9,6 +9,10 @@ class DiGraph:
         self.size = 0
         self.edgelist = {}
         self.modcount = 0
+        self.min_x = 0
+        self.max_x = 0
+        self.min_y = 0
+        self.max_y = 0
 
     def v_size(self) -> int:
         return self.size
@@ -57,7 +61,18 @@ class DiGraph:
         node = Node.Node(node_id, float(pos[0]), float(pos[1]), float(pos[2]))
         self.nodelist[node_id] = node
         self.modcount += 1
+        self.update_min_and_max(node)
         return True
+
+    def update_min_and_max(self, node: Node.Node):
+        if node.x < self.min_x:
+            self.min_x = node.x
+        if node.x > self.max_x:
+            self.max_x = node.x
+        if node.y < self.min_y:
+            self.min_y = node.y
+        if node.y > self.max_y:
+            self.max_y = node.y
 
     def remove_node(self, node_id: int) -> bool:
         if node_id not in self.nodelist:

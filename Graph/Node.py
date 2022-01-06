@@ -1,4 +1,4 @@
-import Edge
+from Graph import Edge
 
 
 class Node:

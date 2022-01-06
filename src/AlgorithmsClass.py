@@ -1,6 +1,8 @@
 import math
 import json
 import sys
+from queue import PriorityQueue
+from types import SimpleNamespace
 
 from Graph import DiGraph
 from Graph import Node
@@ -30,60 +32,20 @@ class Algorithms:
                 return edge.idnum
         return -1
 
-    def load_from_json(self, file_name: str) -> bool:
-        try:
-            temp = open(file_name, 'r')
-            jsonfile = json.load(temp)
-            for x in jsonfile["Nodes"]:
-                try:
-                    pos = str(x["pos"])
-                except KeyError:
-                    pos = "0,0,-1"  # making z -1 to distinguish between position-less nodes and nodes with position (0,0)
-                posarray = tuple(pos.split(","))
-                self.graph.add_node(x["id"], posarray)
-            for x in jsonfile["Edges"]:
-                id1 = int(str(x["src"]))
-                id2 = int(str(x["dest"]))
-                self.graph.add_edge(id1, id2, x["w"])
-        except FileNotFoundError:
-            temp.close()
-            raise Exception("File not found")
-        except TypeError:
-            temp.close()
-            raise Exception("The given file is not formatted correctly")
-        except Exception:
-            temp.close()
-            raise Exception("Unknown problem arose")
-        temp.close()
-        return True
-
-    def save_to_json(self, file_name: str) -> bool:
-        try:
-            temp = open(file_name, 'r')
-            print("File already exists")
-            temp.close()
-            return False
-        except FileNotFoundError:
+    def load_from_json(self, file_contents: str) -> bool:
+        json_graph = json.loads(file_contents)
+        for x in json_graph["Nodes"]:
             try:
-                with open(file_name, 'w', newline="") as newfile:
-                    nodeslist = list()
-                    for x in self.graph.nodelist:
-                        pos = (self.graph.nodelist[x].x, self.graph.nodelist[x].y, self.graph.nodelist[x].z).__str__()
-                        temp = pos.replace("(", "")
-                        newpos = temp.replace(")", "")
-                        nodeslist.append({"id": self.graph.nodelist[x].idnum, "pos": newpos})
-                    edgeslist = list()
-                    for x in self.graph.edgelist:
-                        edgeslist.append({"src": self.graph.edgelist[x].src, "dest": self.graph.edgelist[x].dest,
-                                          "w": self.graph.edgelist[x].weight})
-                    json.dump({"Nodes": nodeslist, "Edges": edgeslist}, newfile, indent=4)
-            except FileExistsError:
-                raise Exception("File already exists")
-            except Exception:
-                newfile.close()
-                raise Exception("Unknown problem arose")
-            newfile.close()
-            return True
+                pos = str(x["pos"])
+            except KeyError:
+                pos = "0,0,-1"  # making z -1 to distinguish between position-less nodes and nodes with position (0,0)
+            posarray = tuple(pos.split(","))
+            self.graph.add_node(x["id"], posarray)
+        for x in json_graph["Edges"]:
+            id1 = int(str(x["src"]))
+            id2 = int(str(x["dest"]))
+            self.graph.add_edge(id1, id2, x["w"])
+        return True
 
     def shortest_path_dist(self, src: int, dest: int) -> float:  #The floyd-Warshal algorithm.
         if src == dest:
@@ -109,6 +71,41 @@ class Algorithms:
                     if self.SPDlist[y, z] > self.SPDlist[y, x] + self.SPDlist[x, z]:
                         self.SPDlist[y, z] = self.SPDlist[y, x] + self.SPDlist[x, z]
         return self.SPDlist[src, dest]
+
+    def Dijkstra(self, id1: int, id2: int) -> (float, list):
+        # Simple Dijkstra's algorithm
+        visited = list()
+        parent = {}
+        pq = PriorityQueue()
+        dist = {x: float('inf') for x in self.graph.nodelist}
+        dist[id1] = 0
+        pq.put((0, id1))
+        parent[id1] = -1
+        while not pq.empty():
+            (x, curr) = pq.get()
+            visited.append(curr)
+            for neighbor in self.graph.nodelist:
+                node = self.graph.nodelist[neighbor]
+                if curr in node.inedgelistbyweight:
+                    distance = node.inedgelistbyweight[curr]
+                    if node.idnum not in visited:
+                        if dist[curr] + distance < dist[node.idnum]:
+                            dist[node.idnum] = dist[curr] + distance
+                            pq.put((dist[curr] + distance, node.idnum))
+                            parent[neighbor] = curr
+        if id2 not in parent:
+            return float('inf'), None
+        output = self.getlistofparent(id2, parent, list())
+        output.reverse()
+        return dist[id2], output
+
+    def getlistofparent(self, idnum: int, parent: dict, l: list) -> list:
+        node = self.graph.nodelist[idnum]
+        node.tag = 1
+        l.append(idnum)
+        if parent[idnum] == -1:
+            return l
+        return self.getlistofparent(parent[idnum], parent, l)
 
     def distance(self, point_a: list, point_b: list):
         return math.sqrt(math.pow((point_a[0]-point_b[0]), 2) + math.pow((point_a[1]-point_b[1]), 2))
