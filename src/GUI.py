@@ -40,11 +40,21 @@ class GUI:
             pokemons = json.loads(self.client.get_pokemons(), object_hook=lambda d: SimpleNamespace(**d)).Pokemons
             pokemons = [p.Pokemon for p in pokemons]
             for p in pokemons:
-                print(p)
+                x, y, _ = p.pos.split(',')
+                x, y = self.scale(float(x), float(y))
+                pygame.draw.circle(self.screen, pygame.color.Color((67, 194, 168)), (x, y), 12.5)
             for edge in self.g_algo.graph.edgelist:
                 self.print_edge(self.g_algo.graph.edgelist[edge])
             for node in self.g_algo.graph.nodelist:
                 self.print_node(self.g_algo.graph.nodelist[node])
+            agents = json.loads(self.client.get_agents(), object_hook=lambda d: SimpleNamespace(**d)).Agents
+            agents = [agent.Agent for agent in agents]
+            for a in agents:
+                x, y, _ = a.pos.split(',')
+                nodeid, node = self.g_algo.find_node(float(x), float(y))
+                x, y = self.scale(float(x), float(y))
+                pygame.draw.circle(self.screen, pygame.color.Color((30, 83, 185)), (x, y), 12.5)
+                # print("The agent is on node number " + str(nodeid))
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

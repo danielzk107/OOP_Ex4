@@ -32,6 +32,13 @@ class Algorithms:
                 return edge.idnum
         return -1
 
+    def find_node(self, x: float, y: float) -> (int, Node):
+        for nodeid in self.graph.nodelist:
+            node = self.graph.nodelist[nodeid]
+            if abs(node.x - x) <= 0.000001 and abs(node.y - y) <= 0.000001:
+                return nodeid, node
+        return -1, None
+
     def load_from_json(self, file_contents: str) -> bool:
         json_graph = json.loads(file_contents)
         for x in json_graph["Nodes"]:
