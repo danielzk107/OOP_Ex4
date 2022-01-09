@@ -30,9 +30,9 @@ class Algorithms:
             srcpoint.append(self.graph.nodelist[self.graph.edgelist[edge].src].y)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].x)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].y)
-            # print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))))
-            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint) < 0.0000001:
+            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint) < 0.00000000001:
                 if (pokemon_type == -1 and self.graph.edgelist[edge].src > self.graph.edgelist[edge].dest) or (pokemon_type == 1 and self.graph.edgelist[edge].src < self.graph.edgelist[edge].dest):
+                    # print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint))))
                     return edge
         return output
 

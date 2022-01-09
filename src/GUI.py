@@ -91,20 +91,18 @@ class GUI:
                         edge = self.g_algo.graph.edgelist[p]
                         if pokemonlist_by_edge[p] not in caught_pokemon_for_each_agent[agent.id]:
                             pos_by_value_and_dist[self.g_algo.shortest_path_dist(nodeid, edge.src) + self.g_algo.shortest_path_dist(edge.src, edge.dest), pokemonlist_by_edge[p].value] = edge
-                            if self.g_algo.shortest_path_dist(nodeid, edge.src) == float('inf'):
-                                print("no path from " + str(nodeid) + " to " + str(edge.src))
                     selected_pokemon_pos = None
                     best_potential_gain = sys.float_info.max
                     if caught_current_pokemon or next_target_by_agent[agent.id] is None or pokemonlist_by_edge[next_target_by_agent[agent.id].idnum] in caught_pokemon_for_each_agent[agent.id]:
                         print(pos_by_value_and_dist)
                         for key in pos_by_value_and_dist:
                             dist, value = key
-                            if abs(dist - value) < best_potential_gain:
-                                best_potential_gain = abs(dist - value)
+                            if dist - value < best_potential_gain:
+                                best_potential_gain = dist - value
                                 selected_pokemon_pos = pos_by_value_and_dist[key]
                         caught_current_pokemon = False
                         next_target_by_agent[agent.id] = selected_pokemon_pos
-                        # print("new target: from " + str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].src) + " to " + str(str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].dest)) + " with value of " + str(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum].value))
+                        print("new target: from " + str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].src) + " to " + str(str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].dest)) + " with value of " + str(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum].value))
                     if next_target_by_agent[agent.id] is not None and agent.src != next_target_by_agent[agent.id].src:
                         dist, path = self.g_algo.Dijkstra(nodeid, next_target_by_agent[agent.id].src)
                         print(path[1])
@@ -117,9 +115,6 @@ class GUI:
                             caught_pokemon_for_each_agent[agent.id].append(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum])
                             print("Caught pokemon")
                             print(caught_pokemon_for_each_agent[agent.id])
-                        #  Temporary fix:
-                        if next_target_by_agent[agent.id] is None:
-                            self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str((agent.src + 1) % len(self.g_algo.graph.nodelist)) + '}')
                 self.client.move()
             pygame.display.update()
             # sleep(0.2)
