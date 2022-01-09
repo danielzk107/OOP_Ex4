@@ -20,10 +20,9 @@ class Algorithms:
         self.ranSPD = False
         self.SPDlist = {}
 
-    def find_edge(self, pokemon_pos: list) -> int:  #  This function receives a position of a given "pokemon" and returns the id number of the edge it resides on.
+    def find_edge(self, pokemon_pos: list, pokemon_type: int) -> int:  #  This function receives a position of a given "pokemon" and returns the id number of the edge it resides on.
         #  We check which edge is closest to the pokemon with a simple min function
         output = -1
-        closest_dist = sys.float_info.max
         for edge in self.graph.edgelist:
             srcpoint = list()
             destpoint = list()
@@ -31,17 +30,16 @@ class Algorithms:
             srcpoint.append(self.graph.nodelist[self.graph.edgelist[edge].src].y)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].x)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].y)
-            print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))))
-            if abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint)) < closest_dist:
-                closest_dist = abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))
-
-                output = edge
+            # print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))))
+            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint) < 0.0000001:
+                if (pokemon_type == -1 and self.graph.edgelist[edge].src > self.graph.edgelist[edge].dest) or (pokemon_type == 1 and self.graph.edgelist[edge].src < self.graph.edgelist[edge].dest):
+                    return edge
         return output
 
     def find_node(self, x: float, y: float) -> (int, Node):
         for nodeid in self.graph.nodelist:
             node = self.graph.nodelist[nodeid]
-            if abs(node.x - x) <= 0.000001 and abs(node.y - y) <= 0.000001:
+            if abs(node.x - x) <= 0.0000001 and abs(node.y - y) <= 0.0000001:
                 return nodeid, node
         return -1, None
 
@@ -62,7 +60,7 @@ class Algorithms:
 
     def shortest_path_dist(self, src: int, dest: int) -> float:  #The floyd-Warshal algorithm.
         if src == dest:
-            return float('inf')
+            return 0
         if self.ranSPD and self.modcount == self.graph.modcount:
             if self.SPDlist[src, dest] < 0 or self.SPDlist[src, dest] >= sys.float_info.max / 2:
                 return float('inf')

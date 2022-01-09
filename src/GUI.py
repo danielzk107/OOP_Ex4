@@ -30,8 +30,10 @@ class GUI:
         self.client.add_agent("{\"id\":0}")
         self.client.start()
         running = self.client.is_running() == 'true'
-        count = 0
         caught_current_pokemon = True
+        up_image = pygame.image.load("../data/charizard.png")
+        down_image = pygame.image.load("../data/bulbasaur.png")
+        agent_image = pygame.image.load("../data/ash.png")
         next_target_by_agent = {}  #  A dictionary which keeps the next target for every agent
         pokemonlist_by_edge = {}  #  keeps each pokemon by the edge it is on
         caught_pokemon_for_each_agent = {}  #  A dictionary of lists which keeps the pokemon each agent caught
@@ -45,29 +47,19 @@ class GUI:
             pokemons = json.loads(self.client.get_pokemons(), object_hook=lambda d: SimpleNamespace(**d)).Pokemons
             pokemons = [p.Pokemon for p in pokemons]
             for p in pokemons:
+                pokemon_type = int(p.type)
                 x, y, _ = p.pos.split(',')
-                # print(self.g_algo.graph.edgelist[self.g_algo.find_edge(pos_list)].src)
-                x, y = self.scale(float(x), float(y))
                 pos_list = list()
                 pos_list.append(float(x))
                 pos_list.append(float(y))
-                actualedge = None
-                smallestdiff = sys.float_info.max
+                x, y = self.scale(float(x), float(y))
                 #  Find which edge the pokemon is on
-                for edge in self.g_algo.graph.edgelist:
-                    newsrcx, newsrcy = self.scale(float(self.g_algo.graph.nodelist[self.g_algo.graph.edgelist[edge].src].x), float(self.g_algo.graph.nodelist[self.g_algo.graph.edgelist[edge].src].y))
-                    srcpos = list()
-                    srcpos.append(newsrcx)
-                    srcpos.append(newsrcy)
-                    newdestx, newdesty = self.scale(float(self.g_algo.graph.nodelist[self.g_algo.graph.edgelist[edge].dest].x), float(self.g_algo.graph.nodelist[self.g_algo.graph.edgelist[edge].dest].y))
-                    destpos = list()
-                    destpos.append(newdestx)
-                    destpos.append(newdesty)
-                    if abs(self.g_algo.distance(srcpos, pos_list) + self.g_algo.distance(pos_list, destpos) - self.g_algo.distance(pos_list, destpos)) < smallestdiff:
-                        smallestdiff = abs(self.g_algo.distance(srcpos, pos_list) + self.g_algo.distance(pos_list, destpos) - self.g_algo.distance(pos_list, destpos))
-                        actualedge = edge
-                pokemonlist_by_edge[actualedge] = p
-                pygame.draw.circle(self.screen, pygame.color.Color((67, 194, 168)), (x, y), 12.5)
+                pokemonlist_by_edge[self.g_algo.find_edge(pos_list, pokemon_type)] = p
+                if pokemon_type == 1:
+                    self.screen.blit(pygame.transform.scale(up_image, (45, 30)), (x, y))
+                else:
+                    self.screen.blit(pygame.transform.scale(down_image, (45, 30)), (x, y))
+                # pygame.draw.circle(self.screen, pygame.color.Color((67, 194, 168)), (x, y), 12.5)
             for edge in self.g_algo.graph.edgelist:
                 self.print_edge(self.g_algo.graph.edgelist[edge])
             for node in self.g_algo.graph.nodelist:
@@ -75,8 +67,7 @@ class GUI:
             for a in agents:
                 x, y, _ = a.pos.split(',')
                 x, y = self.scale(float(x), float(y))
-                pygame.draw.circle(self.screen, pygame.color.Color((30, 83, 185)), (x, y), 12.5)
-                # print("The agent is on node number " + str(nodeid))
+                self.screen.blit(pygame.transform.scale(agent_image, (45, 30)), (x, y))
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -84,7 +75,6 @@ class GUI:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
                     print(mouse)
-            count += 1
             #  Temporary function to move the agent
             agents = json.loads(self.client.get_agents(), object_hook=lambda d: SimpleNamespace(**d)).Agents
             agents = [agent.Agent for agent in agents]
@@ -93,17 +83,20 @@ class GUI:
                 x, y, _ = agent.pos.split(',')
                 nodeid, node = self.g_algo.find_node(float(x), float(y))
                 if agent.dest == -1:
-                    print("Reached node")
                     if agent.id not in next_target_by_agent:
                         next_target_by_agent[agent.id] = None
                     pos_by_value_and_dist = {}  #  Keeps the edge of each pokemon with the distance and value as a key
+                    # print(pokemonlist_by_edge)
                     for p in pokemonlist_by_edge:
                         edge = self.g_algo.graph.edgelist[p]
                         if pokemonlist_by_edge[p] not in caught_pokemon_for_each_agent[agent.id]:
                             pos_by_value_and_dist[self.g_algo.shortest_path_dist(nodeid, edge.src) + self.g_algo.shortest_path_dist(edge.src, edge.dest), pokemonlist_by_edge[p].value] = edge
+                            if self.g_algo.shortest_path_dist(nodeid, edge.src) == float('inf'):
+                                print("no path from " + str(nodeid) + " to " + str(edge.src))
                     selected_pokemon_pos = None
                     best_potential_gain = sys.float_info.max
                     if caught_current_pokemon or next_target_by_agent[agent.id] is None or pokemonlist_by_edge[next_target_by_agent[agent.id].idnum] in caught_pokemon_for_each_agent[agent.id]:
+                        print(pos_by_value_and_dist)
                         for key in pos_by_value_and_dist:
                             dist, value = key
                             if abs(dist - value) < best_potential_gain:
@@ -111,12 +104,11 @@ class GUI:
                                 selected_pokemon_pos = pos_by_value_and_dist[key]
                         caught_current_pokemon = False
                         next_target_by_agent[agent.id] = selected_pokemon_pos
-                        # print("new target: " + str(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum]) + ", with potential gain of " + str(best_potential_gain))
+                        # print("new target: from " + str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].src) + " to " + str(str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].dest)) + " with value of " + str(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum].value))
                     if next_target_by_agent[agent.id] is not None and agent.src != next_target_by_agent[agent.id].src:
                         dist, path = self.g_algo.Dijkstra(nodeid, next_target_by_agent[agent.id].src)
                         print(path[1])
                         self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(path[1]) + '}')
-                        print("Set next node")
                     else:
                         if next_target_by_agent[agent.id] is not None:
                             self.client.choose_next_edge(
@@ -124,14 +116,13 @@ class GUI:
                             caught_current_pokemon = True
                             caught_pokemon_for_each_agent[agent.id].append(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum])
                             print("Caught pokemon")
-                    # print(next_target_by_agent[agent.id].src)
-                    # print(agent.dest)
-                    # agent.dest = selected_pokemon_pos.src
-                    # print(agent.dest)
-                    # self.client.move()
-                    # self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(selected_pokemon_pos.dest) + '}')
+                            print(caught_pokemon_for_each_agent[agent.id])
+                        #  Temporary fix:
+                        if next_target_by_agent[agent.id] is None:
+                            self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str((agent.src + 1) % len(self.g_algo.graph.nodelist)) + '}')
                 self.client.move()
             pygame.display.update()
+            # sleep(0.2)
             clock.tick(60)
 
     def print_node(self, node: Node.Node):
