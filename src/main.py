@@ -20,7 +20,6 @@ client = Client()
 client.start_connection(HOST, PORT)
 pokemons = client.get_pokemons()
 pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
-# print(pokemons)
 # Create an algorithms object and get a graph:
 g_algo = Algorithms()
 g_algo.load_from_json(client.get_graph())

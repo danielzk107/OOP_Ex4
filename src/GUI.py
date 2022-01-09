@@ -21,15 +21,15 @@ class GUI:
         self.screen = display.set_mode((800, 600), depth=32, flags=RESIZABLE)
 
     def scale(self, x: float, y: float) -> (float, float):
-        output_x = ((x - self.g_algo.graph.min_x)/(self.g_algo.graph.max_x - self.g_algo.graph.min_x)) * (self.screen.get_width() - 100) + 50  #Using the same scaling formula as the example
-        output_y = ((y - self.g_algo.graph.min_y)/(self.g_algo.graph.max_y - self.g_algo.graph.min_y)) * (self.screen.get_height() - 100) + 50  #Using the same scaling formula as the example
+        output_x = ((x - self.g_algo.graph.min_x)/(self.g_algo.graph.max_x - self.g_algo.graph.min_x)) * (self.screen.get_width() - 100) + 50  #Using the same scaling formula as the given example
+        output_y = ((y - self.g_algo.graph.min_y)/(self.g_algo.graph.max_y - self.g_algo.graph.min_y)) * (self.screen.get_height() - 100) + 50  #Using the same scaling formula as the given example
         return output_x, output_y
 
     def play(self):
         clock = pygame.time.Clock()
         self.client.add_agent("{\"id\":0}")
-        # self.client.add_agent("{\"id\":1}")
-        # self.client.add_agent("{\"id\":2}")
+        self.client.add_agent("{\"id\":1}")
+        self.client.add_agent("{\"id\":2}")
         self.client.start()
         running = True
         caught_current_pokemon = {}  #  A dictionary which keeps track of whether an agent has captured its current target
@@ -44,7 +44,7 @@ class GUI:
         for agent in agents:
             caught_pokemon_for_each_agent[agent.id] = list()
             caught_current_pokemon[agent.id] = True
-        print(self.client.is_running())
+            next_target_by_agent[agent.id] = None
         while self.client.is_running() == 'true' and running:
             self.screen.fill((99, 108, 121))
             running = self.client.is_running() == 'true'
@@ -63,7 +63,6 @@ class GUI:
                     self.screen.blit(pygame.transform.scale(up_image, (45, 30)), (x - 10, y - 10))
                 else:
                     self.screen.blit(pygame.transform.scale(down_image, (45, 30)), (x - 10, y - 10))
-                # pygame.draw.circle(self.screen, pygame.color.Color((67, 194, 168)), (x, y), 12.5)
             for edge in self.g_algo.graph.edgelist:
                 self.print_edge(self.g_algo.graph.edgelist[edge])
             for node in self.g_algo.graph.nodelist:
@@ -87,18 +86,14 @@ class GUI:
                 x, y, _ = agent.pos.split(',')
                 nodeid, node = self.g_algo.find_node(float(x), float(y))
                 if agent.dest == -1:
-                    if agent.id not in next_target_by_agent:
-                        next_target_by_agent[agent.id] = None
                     pos_by_value_and_dist = {}  #  Keeps the edge of each pokemon with the distance and value as a key
-                    # print(pokemonlist_by_edge)
                     for p in pokemonlist_by_edge:
                         edge = self.g_algo.graph.edgelist[p]
                         if pokemonlist_by_edge[p] not in caught_pokemon_for_each_agent[agent.id]:
-                            pos_by_value_and_dist[(self.g_algo.shortest_path_dist(nodeid, edge.src) + self.g_algo.shortest_path_dist(edge.src, edge.dest)) * 5, pokemonlist_by_edge[p].value] = edge
+                            pos_by_value_and_dist[(self.g_algo.shortest_path_dist(nodeid, edge.src) + self.g_algo.shortest_path_dist(edge.src, edge.dest)) * 10, pokemonlist_by_edge[p].value] = edge
                     selected_pokemon_pos = None
                     best_potential_gain = sys.float_info.max
                     if caught_current_pokemon[agent.id] or next_target_by_agent[agent.id] is None or pokemonlist_by_edge[next_target_by_agent[agent.id].idnum] in caught_pokemon_for_each_agent[agent.id]:
-                        print(pos_by_value_and_dist)
                         for key in pos_by_value_and_dist:
                             dist, value = key
                             chased = False  #  checking if the pokemon is being chased by another agent
@@ -110,34 +105,26 @@ class GUI:
                                 selected_pokemon_pos = pos_by_value_and_dist[key]
                         caught_current_pokemon[agent.id] = False
                         next_target_by_agent[agent.id] = selected_pokemon_pos
-                        print("new target: from " + str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].src) + " to " + str(str(self.g_algo.graph.edgelist[next_target_by_agent[agent.id].idnum].dest)) + " with value of " + str(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum].value))
                     if next_target_by_agent[agent.id] is not None and agent.src != next_target_by_agent[agent.id].src:
                         dist, path = self.g_algo.Dijkstra(nodeid, next_target_by_agent[agent.id].src)
-                        print(path[1])
                         self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(path[1]) + '}')
                     else:
-                        if next_target_by_agent[agent.id] is not None:
-                            self.client.choose_next_edge(
-                                '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_target_by_agent[agent.id].dest) + '}')
+                        if next_target_by_agent[agent.id] is not None:  #  if the agent is on the source node for the de
+                            self.client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_target_by_agent[agent.id].dest) + '}')
                             caught_current_pokemon[agent.id] = True
                             caught_pokemon_for_each_agent[agent.id].append(pokemonlist_by_edge[next_target_by_agent[agent.id].idnum])
-                            print("Caught pokemon")
-                            print(caught_pokemon_for_each_agent[agent.id])
                 self.client.move()
             pygame.display.update()
-            # sleep(0.2)
             clock.tick(60)  #  Running at 60 fps
 
     def print_node(self, node: Node.Node):
         p_centre = pygame.image.load("../data/pokemon_centre.png")
         FONT = pygame.font.SysFont('Arial', 20, bold=True)
         x, y = self.scale(node.x, node.y)
-        # pygame.draw.circle(self.screen, pygame.color.Color((228, 164, 68)), (x, y), 10)
         id_srf = FONT.render(str(node.idnum), True, Color(0, 0, 0))
         rect = id_srf.get_rect(center=(x, y))
         self.screen.blit(pygame.transform.scale(p_centre, (45, 30)), (x - 10, y - 10))
         self.screen.blit(id_srf, rect)
-        # gfxdraw.aacircle(self.screen, int(x), int(y), 10, pygame.color.Color((228, 164, 68)))
 
     def print_edge(self, edge: Edge.Edge):
         srcnode = self.g_algo.graph.nodelist[edge.src]

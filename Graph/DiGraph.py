@@ -42,7 +42,6 @@ class DiGraph:
         if id2 in srcnode.outedgelist:
             return False
         edge = Edge.Edge(id1, id2, weight, len(self.edgelist))
-        # print("New edge from " + str(id1) + " to " + str(id2) + " with idnum " + str(len(self.edgelist)))
         srcnode.AddEdge(id2, edge, 1)
         destnode.AddEdge(id1, edge, 0)
         self.edgelist[len(self.edgelist)] = edge

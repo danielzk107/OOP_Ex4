@@ -30,7 +30,7 @@ class Algorithms:
             srcpoint.append(self.graph.nodelist[self.graph.edgelist[edge].src].y)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].x)
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].y)
-            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint) < 0.00000000001:
+            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint) < 0.0000001:
                 if (pokemon_type == -1 and self.graph.edgelist[edge].src > self.graph.edgelist[edge].dest) or (pokemon_type == 1 and self.graph.edgelist[edge].src < self.graph.edgelist[edge].dest):
                     # print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint))))
                     return edge
@@ -58,7 +58,7 @@ class Algorithms:
             self.graph.add_edge(id1, id2, x["w"])
         return True
 
-    def shortest_path_dist(self, src: int, dest: int) -> float:  #The floyd-Warshal algorithm.
+    def shortest_path_dist(self, src: int, dest: int) -> float:  #  The floyd-Warshal algorithm.
         if src == dest:
             return 0
         if self.ranSPD and self.modcount == self.graph.modcount:
