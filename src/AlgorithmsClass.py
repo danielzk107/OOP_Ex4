@@ -3,7 +3,7 @@ import json
 import sys
 from queue import PriorityQueue
 from types import SimpleNamespace
-
+from math import isclose
 from Graph import DiGraph
 from Graph import Node
 from Graph import Edge
@@ -20,17 +20,23 @@ class Algorithms:
         self.ranSPD = False
         self.SPDlist = {}
 
-    def find_edge(self, pokemon_pos: list) -> int:  #This function receives a position of a given "pokemon" and returns the id number of the edge it resides on.
+    def find_edge(self, pokemon_pos: list) -> int:  #  This function receives a position of a given "pokemon" and returns the id number of the edge it resides on.
+        #  We check which edge is closest to the pokemon with a simple min function
+        output = -1
+        closest_dist = sys.float_info.max
         for edge in self.graph.edgelist:
             srcpoint = list()
             destpoint = list()
-            srcpoint.append(edge.src.x)
-            srcpoint.append(edge.src.y)
-            destpoint.append(edge.dest.x)
-            destpoint.append(edge.dest.y)
-            if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) == self.distance(srcpoint, destpoint):
-                return edge.idnum
-        return -1
+            srcpoint.append(self.graph.nodelist[self.graph.edgelist[edge].src].x)
+            srcpoint.append(self.graph.nodelist[self.graph.edgelist[edge].src].y)
+            destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].x)
+            destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].y)
+            print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))))
+            if abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint)) < closest_dist:
+                closest_dist = abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, srcpoint)) - self.distance(srcpoint, destpoint))
+
+                output = edge
+        return output
 
     def find_node(self, x: float, y: float) -> (int, Node):
         for nodeid in self.graph.nodelist:
