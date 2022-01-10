@@ -5,7 +5,11 @@ This project is the fifth and final assignment in the course "Object Oriented Pr
 
 ## Implementation
 
+###TBC
+
 ## GUI
+
+###TBC
 
 ## Testing
 
@@ -13,4 +17,8 @@ The testing in this project uses the python library "unittest", and is rather el
 
 ## Performance
 
+###TBC
+
 ## How to run
+
+###TBC
