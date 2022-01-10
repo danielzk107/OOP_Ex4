@@ -1,11 +1,8 @@
 import json
 import sys
-from time import sleep
 from types import SimpleNamespace
-import random
 import pygame
 from pygame import *
-from pygame import gfxdraw
 from Graph import Node
 from Graph import Edge
 from client import Client

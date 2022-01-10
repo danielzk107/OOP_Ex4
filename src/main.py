@@ -6,11 +6,7 @@ Very simple GUI example for python client to communicates with the server and "p
 from types import SimpleNamespace
 from client import Client
 import json
-import Graph
 from AlgorithmsClass import Algorithms
-from pygame import gfxdraw
-import pygame
-from pygame import *
 from src import GUI
 
 HOST = "127.0.0.1"
@@ -23,7 +19,7 @@ pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 # Create an algorithms object and get a graph:
 g_algo = Algorithms()
 g_algo.load_from_json(client.get_graph())
-
+print(client.get_graph())
 #  Using the given method for obtaining the minimum and maximum values of x and y in the graph:
 graph = json.loads(client.get_graph(), object_hook=lambda json_dict: SimpleNamespace(**json_dict))
 for n in graph.Nodes:
@@ -38,6 +34,7 @@ g_algo.graph.max_y = max(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
 gui = GUI.GUI(g_algo, client)
 print("Calling the run function")
 gui.play()
+client.stop_connection()
 
 
 

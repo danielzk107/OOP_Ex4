@@ -2,11 +2,8 @@ import math
 import json
 import sys
 from queue import PriorityQueue
-from types import SimpleNamespace
-from math import isclose
 from Graph import DiGraph
 from Graph import Node
-from Graph import Edge
 
 
 class Algorithms:
@@ -32,7 +29,6 @@ class Algorithms:
             destpoint.append(self.graph.nodelist[self.graph.edgelist[edge].dest].y)
             if (self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint) < 0.0000001:
                 if (pokemon_type == -1 and self.graph.edgelist[edge].src > self.graph.edgelist[edge].dest) or (pokemon_type == 1 and self.graph.edgelist[edge].src < self.graph.edgelist[edge].dest):
-                    # print(str(edge) + ", " + str(abs((self.distance(srcpoint, pokemon_pos) + self.distance(pokemon_pos, destpoint)) - self.distance(srcpoint, destpoint))))
                     return edge
         return output
 
@@ -84,6 +80,8 @@ class Algorithms:
         return self.SPDlist[src, dest]
 
     def Dijkstra(self, id1: int, id2: int) -> (float, list):
+        if id1 == id2:
+            return 0, [0]
         # Simple Dijkstra's algorithm
         visited = list()
         parent = {}
