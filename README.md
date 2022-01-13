@@ -36,10 +36,10 @@ This function receives two integers, which represent two node id numbers, and ou
 
 ## GUI
 
+This project uses Pygame, which is an open-source GUI for python, used mostly for casual game development (not serious gaming, as python is too slow). In the GUI the nodes are represented by a picture of a pokemon center, the player by a picture of Ash Ketchum, the downwards pokemon by a picture of bulbasaur, and the upwards pokemon by a picture of charizard. Here is a short gif of the GUI when running scenario number 13 (sped up x1.5):
 
+![Pokémon_Game_vid_Trim](https://user-images.githubusercontent.com/92798950/149381130-8f55cc59-bd90-45c8-b1b9-ac52f08ab87c.gif)
 
-
-### TBC
 
 ## Testing
 
@@ -47,7 +47,26 @@ The testing in this project uses the python library "unittest", and is rather el
 
 ## Performance
 
-### TBC
+The performance of this program is measured directly by the server that runs it. Here is a table with all the scenarios and their respective grades:
+
+| Scenario | Grade |
+| --- | --- |
+| 0 | 85 |
+| 1 | 526 |
+| 2 | 249 |
+| 3 | 853 |
+| 4 | 171 |
+| 5 | 474 | 
+| 6 | 79 |
+| 7 | 279 |
+| 8 | 52 |
+| 9 | 331 |
+| 10 | 88 |
+| 11 | 419 |
+| 12 | 31 |
+| 13 | 147 |
+| 14 | 67 |
+| 15 | 229 |
 
 ## How to run
 
