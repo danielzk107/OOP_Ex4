@@ -69,5 +69,5 @@ The performance of this program is measured directly by the server that runs it.
 | 15 | 229 |
 
 ## How to run
-
-### TBC
+In order to run this project, one has to download both the client code (the code shared here) and the server side (the jar file in the main branch). Once downloaded, open the command line/terminal and go to the file path of the jar file you have downloaded, then type in 'java -jar Ex4_Server_v0.0.jar #' and replace the # with any number you would like between 0 and 15. The server should respond with the message 'init Ex4 server with case: #'. After you have run the server, open this project in an IDE of your choice and run the file 'main.py'. After that, you should see the game window po up and the game would start playing.
+If you are experiencing any difficulties in any of these steps, you are welcome to ask for technical support from danielzk107@gmail.com
